@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [1.0.3]
+
+- Change how detection works again
+
 ## [1.0.2]
 
 - Fix detection

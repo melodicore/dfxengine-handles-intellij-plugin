@@ -24,19 +24,32 @@ public class HandleCollectionHighlightInfoFilter implements HighlightInfoFilter 
         if(info.getDescription() == null) {
             return true;
         }
-        if(!info.getDescription().contains(" may not contain ")) {
+        if(!info.getDescription().matches("'.+' may not contain (objects|keys) of type 'String'")) {
             return true;
         }
         PsiElement element = file.findElementAt(info.getActualStartOffset());
         PsiExpression expression = PsiTreeUtil.getParentOfType(element, PsiExpression.class);
-        if(expression == null || expression.getType() == null) {
+        if(expression == null) {
             return true;
         }
-        if(!isType("java.lang.String", expression.getType(), false) &&
-                !isTypeOrSupertype("java.util.Collection<java.lang.String>", expression.getType(), false)) {
-            return true;
+        loop: while(true) {
+            PsiJavaToken token = PsiTreeUtil.getPrevSiblingOfType(expression, PsiJavaToken.class);
+            while(true) {
+                if(token == null) {
+                    expression = PsiTreeUtil.getParentOfType(expression, PsiExpression.class);
+                    if(expression == null) {
+                        return true;
+                    }
+                    continue loop;
+                }
+                if("(".equals(token.getText())) {
+                    break loop;
+                } else {
+                    token = PsiTreeUtil.getPrevSiblingOfType(token, PsiJavaToken.class);
+                }
+            }
         }
-        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(expression, PsiMethodCallExpression.class);
         if(call == null) {
             return true;
         }

@@ -20,6 +20,9 @@ public class PassTest {
         ExtendedSet es = new ExtendedSet();
         boolean b2 = es.contains("string");
         boolean b3 = es.containsAll(l);
+        boolean b4 = es.contains(l.toString());
+        boolean b5 = es.contains(l.getClass().toString());
+        boolean b6 = es.contains((String) l.getClass().toString());
     }
 
     public static class ExtendedSet implements HandleSet {
