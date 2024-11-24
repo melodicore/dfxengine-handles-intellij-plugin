@@ -7,13 +7,15 @@ import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * @author datafox
  */
 public class HandleCollectionHighlightInfoFilter implements HighlightInfoFilter {
-
     @Override
     public boolean accept(@NotNull HighlightInfo info, @Nullable PsiFile file) {
         if(file == null) {
@@ -63,7 +65,18 @@ public class HandleCollectionHighlightInfoFilter implements HighlightInfoFilter 
         if(isType(name, type, ignoreParams)) {
             return true;
         }
+        return getAllSuperTypes(type).anyMatch(t -> isType(name, t, ignoreParams));
+    }
 
-        return Arrays.stream(type.getSuperTypes()).anyMatch(t -> isType(name, t, ignoreParams));
+    private Stream<PsiType> getAllSuperTypes(PsiType type) {
+        Set<PsiType> types = new HashSet<>(List.of(type.getSuperTypes()));
+        int size;
+        do {
+            size = types.size();
+            for(PsiType t : types.toArray(PsiType[]::new)) {
+                types.addAll(List.of(t.getSuperTypes()));
+            }
+        } while(size != types.size());
+        return types.stream();
     }
 }
