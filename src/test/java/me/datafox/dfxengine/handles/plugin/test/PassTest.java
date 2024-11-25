@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class PassTest {
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
@@ -23,6 +24,11 @@ public class PassTest {
         boolean b4 = es.contains(l.toString());
         boolean b5 = es.contains(l.getClass().toString());
         boolean b6 = es.contains((String) l.getClass().toString());
+        boolean b7 = test("string", es::contains);
+    }
+
+    private boolean test(String str, Predicate<String> predicate) {
+        return predicate.test(str);
     }
 
     public static class ExtendedSet implements HandleSet {

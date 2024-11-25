@@ -32,31 +32,38 @@ public class HandleCollectionHighlightInfoFilter implements HighlightInfoFilter 
         if(expression == null) {
             return true;
         }
-        loop: while(true) {
-            PsiJavaToken token = PsiTreeUtil.getPrevSiblingOfType(expression, PsiJavaToken.class);
+        PsiReferenceExpression reference;
+        if(expression instanceof PsiMethodReferenceExpression method) {
+            reference = method;
+        } else {
+            loop:
             while(true) {
-                if(token == null) {
-                    expression = PsiTreeUtil.getParentOfType(expression, PsiExpression.class);
-                    if(expression == null) {
-                        return true;
+                PsiJavaToken token = PsiTreeUtil.getPrevSiblingOfType(expression, PsiJavaToken.class);
+                while(true) {
+                    if(token == null) {
+                        expression = PsiTreeUtil.getParentOfType(expression, PsiExpression.class);
+                        if(expression == null) {
+                            return true;
+                        }
+                        continue loop;
                     }
-                    continue loop;
-                }
-                if("(".equals(token.getText())) {
-                    break loop;
-                } else {
-                    token = PsiTreeUtil.getPrevSiblingOfType(token, PsiJavaToken.class);
+                    if("(".equals(token.getText())) {
+                        break loop;
+                    } else {
+                        token = PsiTreeUtil.getPrevSiblingOfType(token, PsiJavaToken.class);
+                    }
                 }
             }
+            PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(expression, PsiMethodCallExpression.class);
+            if(call == null) {
+                return true;
+            }
+            reference = call.getMethodExpression();
         }
-        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(expression, PsiMethodCallExpression.class);
-        if(call == null) {
+        if(reference.getQualifier() == null) {
             return true;
         }
-        if(call.getMethodExpression().getQualifier() == null) {
-            return true;
-        }
-        if(!(call.getMethodExpression().getQualifier() instanceof PsiReferenceExpression qualifier)) {
+        if(!(reference.getQualifier() instanceof PsiReferenceExpression qualifier)) {
             return true;
         }
         if(qualifier.getType() == null) {

@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [1.0.4]
+
+- Detection now works on method references
+
 ## [1.0.3]
 
 - Change how detection works again
