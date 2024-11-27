@@ -25,6 +25,9 @@ public class PassTest {
         boolean b5 = es.contains(l.getClass().toString());
         boolean b6 = es.contains((String) l.getClass().toString());
         boolean b7 = test("string", es::contains);
+        List<HandleMap<String>> l2 = new ArrayList<>();
+        l2.add(map);
+        boolean b8 = l2.get(0).containsKey("string");
     }
 
     private boolean test(String str, Predicate<String> predicate) {

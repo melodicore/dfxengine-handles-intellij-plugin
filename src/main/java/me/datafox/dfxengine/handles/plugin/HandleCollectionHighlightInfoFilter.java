@@ -28,49 +28,33 @@ public class HandleCollectionHighlightInfoFilter implements HighlightInfoFilter 
             return true;
         }
         PsiElement element = file.findElementAt(info.getActualStartOffset());
-        PsiExpression expression = PsiTreeUtil.getParentOfType(element, PsiExpression.class);
-        if(expression == null) {
+        if(element == null) {
             return true;
         }
-        PsiReferenceExpression reference;
-        if(expression instanceof PsiMethodReferenceExpression method) {
-            reference = method;
-        } else {
-            loop:
-            while(true) {
-                PsiJavaToken token = PsiTreeUtil.getPrevSiblingOfType(expression, PsiJavaToken.class);
-                while(true) {
-                    if(token == null) {
-                        expression = PsiTreeUtil.getParentOfType(expression, PsiExpression.class);
-                        if(expression == null) {
-                            return true;
-                        }
-                        continue loop;
-                    }
-                    if("(".equals(token.getText())) {
-                        break loop;
-                    } else {
-                        token = PsiTreeUtil.getPrevSiblingOfType(token, PsiJavaToken.class);
-                    }
-                }
-            }
-            PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(expression, PsiMethodCallExpression.class);
-            if(call == null) {
+        PsiExpression target;
+        if(element.getParent() instanceof PsiMethodReferenceExpression reference) {
+            if(reference.getFirstChild() instanceof PsiReferenceExpression expression) {
+                target = expression;
+            } else {
                 return true;
             }
-            reference = call.getMethodExpression();
+        } else {
+            PsiExpressionList list = PsiTreeUtil.getParentOfType(element, PsiExpressionList.class);
+            if(list == null) {
+                return true;
+            }
+            PsiReferenceExpression expression = PsiTreeUtil.getPrevSiblingOfType(list, PsiReferenceExpression.class);
+            if(expression == null) {
+                return true;
+            }
+            if(expression.getQualifier() instanceof PsiExpression qualifier) {
+                target = qualifier;
+            } else {
+                return true;
+            }
         }
-        if(reference.getQualifier() == null) {
-            return true;
-        }
-        if(!(reference.getQualifier() instanceof PsiReferenceExpression qualifier)) {
-            return true;
-        }
-        if(qualifier.getType() == null) {
-            return true;
-        }
-        return !(isTypeOrSupertype("me.datafox.dfxengine.handles.api.HandleSet", qualifier.getType(), false) ||
-                isTypeOrSupertype("me.datafox.dfxengine.handles.api.HandleMap", qualifier.getType(), true));
+        return !(isTypeOrSupertype("me.datafox.dfxengine.handles.api.HandleSet", target.getType(), false) ||
+                isTypeOrSupertype("me.datafox.dfxengine.handles.api.HandleMap", target.getType(), true));
     }
 
     private boolean isType(String name, PsiType type, boolean ignoreParams) {

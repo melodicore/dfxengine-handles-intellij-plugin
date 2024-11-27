@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [1.0.5]
+
+- Rework detection
+
 ## [1.0.4]
 
 - Detection now works on method references
